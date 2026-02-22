@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="es" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invitación Bautizo - Juanito Alcachofas</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&amp;family=Montserrat:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    
+    html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
+    body { overflow-x: hidden; }
+    #app-container { width: 100%; }
+    
+    @keyframes confetti-fall {
+      0% { 
+        transform: translateY(-100%) rotate(0deg) translateX(0);
+        opacity: 1;
+      }
+      100% { 
+        transform: translateY(100vh) rotate(720deg) translateX(100px);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes confetti-swirl-left {
+      0% { 
+        transform: translateY(-100%) rotate(0deg) translateX(0);
+        opacity: 1;
+      }
+      100% { 
+        transform: translateY(100vh) rotate(720deg) translateX(-100px);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes sparkle-glow {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    
+    @keyframes float-gentle {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(2deg); }
+    }
+    
+    @keyframes slide-up {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes countdown-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    @keyframes shine {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+    
+    .confetti-piece {
+      position: fixed;
+      width: 12px;
+      height: 12px;
+      pointer-events: none;
+    }
+    
+    .confetti-piece.gold {
+      animation: confetti-fall 3.5s ease-in forwards;
+    }
+    
+    .confetti-piece.white {
+      animation: confetti-swirl-left 3.5s ease-in forwards;
+    }
+    
+    .sparkle {
+      animation: sparkle-glow 2s ease-in-out infinite;
+    }
+    
+    .float-animation {
+      animation: float-gentle 3s ease-in-out infinite;
+    }
+    
+    .slide-up {
+      animation: slide-up 0.8s ease-out forwards;
+    }
+    
+    .countdown-pulse {
+      animation: countdown-pulse 1s ease-in-out infinite;
+    }
+    
+    .nav-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .nav-btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .nav-btn.active {
+      transform: scale(1.05);
+    }
+    
+    .timeline-card {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .timeline-card:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+    
+    .timer-digit {
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.1em;
+    }
+    
+    .invitation-card {
+      transition: all 0.6s ease;
+    }
+    
+    .invitation-card:hover {
+      transform: translateY(-10px);
+      filter: drop-shadow(0 20px 60px rgba(212, 175, 55, 0.3));
+    }
+
+    @media (max-width: 768px) {
+      .nav-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+      
+      .timer-digit {
+        font-size: 3rem;
+      }
+    }
+  </style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body style="font-family: 'Montserrat', sans-serif;">
+  <div id="app-container" class="w-full h-full"></div>
+  <script>
+    const defaultConfig = {
+      baby_name: 'Juanito Alcachofas',
+      celebration_message: 'Están invitados al bautizo de mi hijo Juanito. Esperamos puedan asistir a un día tan importante para nosotros en la vida de nuestro hijo Juanito.',
+      family_names: 'Su familia',
+      event_date: '30 de Septiembre',
+      background_color: '#f0f4f8',
+      surface_color: '#ffffff',
+      text_color: '#1a3a52',
+      primary_action: '#d4af37',
+      secondary_action: '#0066cc',
+      font_family: 'Cormorant Garamond',
+      font_size: 16
+    };
+
+    let confettiActive = false;
+
+    function createApp() {
+      const container = document.getElementById('app-container');
+      container.innerHTML = `
+        <div id="main-wrapper" class="w-full" style="background: linear-gradient(135deg, ${defaultConfig.background_color}, #ffffff);">
+          <!-- Invitation Section -->
+          <section id="invitation-section" class="w-full min-h-screen flex items-center justify-center p-4"></section>
+          
+          <!-- Countdown Section -->
+          <section id="countdown-section" class="w-full min-h-screen flex items-center justify-center p-4"></section>
+          
+          <!-- Timeline Section -->
+          <section id="timeline-section" class="w-full min-h-screen flex items-center justify-center p-4"></section>
+        </div>
+      `;
+      
+      renderAllSections();
+    }
+
+    function renderAllSections() {
+      const config = window.elementSdk?.config || defaultConfig;
+      
+      const invitationSection = document.getElementById('invitation-section');
+      renderInvitation(invitationSection, config);
+      
+      const countdownSection = document.getElementById('countdown-section');
+      renderCountdown(countdownSection, config);
+      
+      const timelineSection = document.getElementById('timeline-section');
+      renderTimeline(timelineSection, config);
+    }
+
+    function renderInvitation(container, config) {
+      container.innerHTML = `
+        <div class="flex items-center justify-center min-h-full py-8">
+          <div id="invitation-card" class="invitation-card w-full max-w-2xl rounded-3xl p-6 md:p-10 overflow-hidden" style="background: linear-gradient(135deg, ${config.surface_color}, ${config.background_color}); border: 3px solid ${config.primary_action}; box-shadow: 0 15px 60px ${config.primary_action}20;">
+            
+            <!-- Confetti Container -->
+            <div id="confetti-container" class="fixed inset-0 pointer-events-none overflow-hidden"></div>
+            
+            <!-- Decorative Sparkles -->
+            <div class="absolute top-4 right-6 sparkle text-2xl">✨</div>
+            <div class="absolute bottom-6 left-4 sparkle text-2xl" style="animation-delay: 0.5s;">✨</div>
+            <div class="absolute top-1/3 right-4 sparkle text-xl" style="animation-delay: 1s;">✦</div>
+            
+            <!-- Main Content -->
+            <div class="relative z-10">
+              <!-- Header -->
+              <div class="text-center mb-8 slide-up">
+                <p class="text-xs md:text-sm uppercase tracking-widest mb-2" style="color: ${config.secondary_action}; font-family: 'Montserrat', sans-serif;">Ceremonia Sagrada</p>
+                <h1 class="text-4xl md:text-5xl font-bold mb-2 float-animation" style="font-family: '${config.font_family}', serif; color: ${config.text_color};">
+                  Bautizo de
+                </h1>
+                <p class="text-3xl md:text-5xl font-bold" style="color: ${config.primary_action}; font-family: '${config.font_family}', serif;">
+                  ${config.baby_name}
+                </p>
+              </div>
+              
+              <!-- Decorative Line -->
+              <div class="flex items-center justify-center gap-4 my-6">
+                <div class="flex-1 h-px" style="background: linear-gradient(90deg, transparent, ${config.primary_action}, transparent);"></div>
+                <span class="text-2xl">⛪</span>
+                <div class="flex-1 h-px" style="background: linear-gradient(90deg, transparent, ${config.primary_action}, transparent);"></div>
+              </div>
+              
+              <!-- Message -->
+              <div class="bg-white bg-opacity-50 rounded-2xl p-6 md:p-8 my-8" style="border-left: 4px solid ${config.primary_action};">
+                <p id="invitation-message" class="text-base md:text-lg leading-relaxed text-center" style="color: ${config.text_color}; font-family: 'Montserrat', sans-serif;">
+                  ${config.celebration_message}
+                </p>
+              </div>
+              
+              <!-- Event Details -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+                <div class="text-center p-4 rounded-2xl" style="background: ${config.primary_action}15;">
+                  <p class="text-xs uppercase tracking-wider mb-2" style="color: ${config.secondary_action}; font-family: 'Montserrat', sans-serif;">Fecha</p>
+                  <p class="text-xl md:text-2xl font-bold" style="color: ${config.primary_action}; font-family: '${config.font_family}', serif;">
+                    ${config.event_date}
+                  </p>
+                </div>
+                <div class="text-center p-4 rounded-2xl" style="background: ${config.secondary_action}15;">
+                  <p class="text-xs uppercase tracking-wider mb-2" style="color: ${config.secondary_action}; font-family: 'Montserrat', sans-serif;">Con amor de</p>
+                  <p class="text-lg md:text-xl font-semibold" style="color: ${config.text_color}; font-family: '${config.font_family}', serif;">
+                    ${config.family_names}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Action Button -->
+              <div class="text-center pt-4">
+                <button onclick="triggerConfetti()" class="px-8 py-4 rounded-full font-semibold text-lg transition-all hover:scale-105" style="background: linear-gradient(135deg, ${config.primary_action}, ${config.secondary_action}); color: white; font-family: 'Montserrat', sans-serif;">
+                  ¡Celebrar! 🎉
+                </button>
+              </div>
+              
+              <!-- Blessing -->
+              <p class="text-center mt-8 text-sm opacity-70" style="color: ${config.text_color}; font-family: '${config.font_family}', serif; font-style: italic;">
+                "Que Dios bendiga a nuestro hijo en este día sagrado"
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function triggerConfetti() {
+      if (confettiActive) return;
+      confettiActive = true;
+      
+      const config = window.elementSdk?.config || defaultConfig;
+      const confettiContainer = document.getElementById('confetti-container');
+      
+      // Gold and white confetti pieces
+      for (let i = 0; i < 80; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = `confetti-piece ${i % 2 === 0 ? 'gold' : 'white'}`;
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.top = '-20px';
+        confetti.style.background = i % 2 === 0 ? config.primary_action : config.surface_color;
+        confetti.style.width = (Math.random() * 15 + 8) + 'px';
+        confetti.style.height = confetti.style.width;
+        confetti.style.borderRadius = Math.random() > 0.7 ? '50%' : '2px';
+        confetti.style.boxShadow = `0 0 ${Math.random() * 10 + 5}px ${config.primary_action}60`;
+        confetti.style.animationDelay = (Math.random() * 0.5) + 's';
+        confettiContainer.appendChild(confetti);
+      }
+      
+      setTimeout(() => {
+        confettiContainer.innerHTML = '';
+        confettiActive = false;
+      }, 4000);
+    }
+
+    function renderCountdown(container, config) {
+      const eventDate = new Date('2024-09-30').getTime();
+      const today = new Date().getTime();
+      const timeRemaining = eventDate - today;
+      
+      const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+      
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center min-h-full gap-8 py-8">
+          <!-- Title -->
+          <div class="text-center slide-up">
+            <h2 class="text-2xl md:text-4xl font-bold mb-2" style="color: ${config.text_color}; font-family: '${config.font_family}', serif;">
+              Tiempo para la Celebración
+            </h2>
+            <p class="text-sm opacity-70" style="color: ${config.text_color};">El gran día de Juanito se acerca</p>
+          </div>
+          
+          <!-- Countdown Display -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 w-full max-w-3xl px-4">
+            <!-- Days -->
+            <div class="text-center rounded-2xl p-4 md:p-8 countdown-pulse" style="background: linear-gradient(135deg, ${config.primary_action}20, ${config.secondary_action}10); border: 2px solid ${config.primary_action}40;">
+              <div class="timer-digit text-4xl md:text-6xl font-bold" style="color: ${config.primary_action}; font-family: '${config.font_family}', serif;">
+                ${days}
+              </div>
+              <p class="text-xs md:text-sm uppercase tracking-wider mt-2" style="color: ${config.text_color}; font-family: 'Montserrat', sans-serif;">Días</p>
+            </div>
+            
+            <!-- Hours -->
+            <div class="text-center rounded-2xl p-4 md:p-8 countdown-pulse" style="background: linear-gradient(135deg, ${config.secondary_action}20, ${config.primary_action}10); border: 2px solid ${config.secondary_action}40;">
+              <div class="timer-digit text-4xl md:text-6xl font-bold" style="color: ${config.secondary_action}; font-family: '${config.font_family}', serif;">
+                ${hours.toString().padStart(2, '0')}
+              </div>
+              <p class="text-xs md:text-sm uppercase tracking-wider mt-2" style="color: ${config.text_color}; font-family: 'Montserrat', sans-serif;">Horas</p>
+            </div>
+            
+            <!-- Minutes -->
+            <div class="text-center rounded-2xl p-4 md:p-8 countdown-pulse" style="background: linear-gradient(135deg, ${config.primary_action}20, ${config.secondary_action}10); border: 2px solid ${config.primary_action}40;">
+              <div class="timer-digit text-4xl md:text-6xl font-bold" style="color: ${config.primary_action}; font-family: '${config.font_family}', serif;">
+                ${minutes.toString().padStart(2, '0')}
+              </div>
+              <p class="text-xs md:text-sm uppercase tracking-wider mt-2" style="color: ${config.text_color}; font-family: 'Montserrat', sans-serif;">Min</p>
+            </div>
+            
+            <!-- Seconds -->
+            <div class="text-center rounded-2xl p-4 md:p-8 countdown-pulse" style="background: linear-gradient(135deg, ${config.secondary_action}20, ${config.primary_action}10); border: 2px solid ${config.secondary_action}40;">
+              <div class="timer-digit text-4xl md:text-6xl font-bold" style="color: ${config.secondary_action}; font-family: '${config.font_family}', serif;">
+                ${seconds.toString().padStart(2, '0')}
+              </div>
+              <p class="text-xs md:text-sm uppercase tracking-wider mt-2" style="color: ${config.text_color}; font-family: 'Montserrat', sans-serif;">Seg</p>
+            </div>
+          </div>
+          
+          <!-- Dramatic Message -->
+          <div class="text-center max-w-2xl mx-auto px-4">
+            <p class="text-2xl md:text-3xl font-bold mb-4" style="color: ${config.primary_action}; font-family: '${config.font_family}', serif;">
+              ¡El bautizo de Juanito está muy cerca!
+            </p>
+            <p class="text-sm md:text-base opacity-75" style="color: ${config.text_color};">
+              Prepare su corazón para un momento lleno de gracia y bendiciones divinas.
+            </p>
+          </div>
+          
+          <!-- Decorative Elements -->
+          <div class="flex justify-center gap-8 text-4xl md:text-5xl mt-4">
+            <span class="float-animation" style="animation-delay: 0s;">⛪</span>
+            <span class="float-animation" style="animation-delay: 0.3s;">✦</span>
+            <span class="float-animation" style="animation-delay: 0.6s;">⛪</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTimeline(container, config) {
+      const moments = [
+        { 
+          title: 'Recién Nacido', 
+          emoji: '👶', 
+          desc: 'El primer momento de Juanito en el mundo', 
+          details: 'Un regalo divino ha llegado',
+          date: 'Inicio'
+        },
+        { 
+          title: 'Primer Mes', 
+          emoji: '🍼', 
+          desc: 'Juanito descubre el sabor de la vida', 
+          details: 'Crecimiento y primeras sonrisas',
+          date: 'Mes 1'
+        },
+        { 
+          title: 'Primeros Pasos', 
+          emoji: '🚶', 
+          desc: 'Juanito se mantiene sentado por sí solo', 
+          details: 'Mayor independencia y fortaleza',
+          date: 'Mes 6'
+        },
+        { 
+          title: 'Aventura', 
+          emoji: '🌟', 
+          desc: 'Los primeros pasos de Juanito en el mundo', 
+          details: 'Explorador curioso y valiente',
+          date: 'Mes 12'
+        }
+      ];
+      
+      container.innerHTML = `
+        <div class="max-w-4xl mx-auto pb-8">
+          <!-- Header -->
+          <div class="text-center mb-12 slide-up">
+            <h2 class="text-3xl md:text-5xl font-bold mb-2" style="font-family: '${config.font_family}', serif; background: linear-gradient(90deg, ${config.primary_action}, ${config.secondary_action}); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+              ${config.baby_name}
+            </h2>
+            <p class="text-sm md:text-base opacity-70" style="color: ${config.text_color}; font-family: 'Montserrat', sans-serif;">Su primer año lleno de amor y bendiciones 💕</p>
+          </div>
+          
+          <!-- Timeline -->
+          <div class="relative px-4">
+            <!-- Vertical Line -->
+            <div class="absolute left-1/2 top-0 bottom-0 w-1 -translate-x-1/2 rounded-full" style="background: linear-gradient(180deg, ${config.primary_action}, ${config.secondary_action});"></div>
+            
+            <!-- Cards -->
+            <div class="space-y-6">
+              ${moments.map((moment, index) => `
+                <div class="relative flex items-center gap-4 md:gap-8 slide-up" style="animation-delay: ${index * 0.15}s;">
+                  <!-- Card -->
+                  <div class="w-full md:w-5/12 timeline-card rounded-2xl p-5 md:p-6 cursor-pointer md:${index % 2 === 0 ? 'ml-auto' : 'mr-auto'}" style="background: ${config.surface_color}; border: 2px solid ${config.primary_action}40; box-shadow: 0 4px 15px ${config.primary_action}10;">
+                    <div class="flex items-start gap-4">
+                      <span class="text-4xl md:text-5xl flex-shrink-0">${moment.emoji}</span>
+                      <div class="flex-1 min-w-0">
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-2" style="background: ${config.primary_action}20; color: ${config.primary_action}; font-family: 'Montserrat', sans-serif;">
+                          ${moment.date}
+                        </span>
+                        <h3 class="text-xl md:text-2xl font-bold mb-1" style="color: ${config.text_color}; font-family: '${config.font_family}', serif;">
+                          ${moment.title}
+                        </h3>
+                        <p class="text-sm md:text-base opacity-75 mb-2" style="color: ${config.text_color}; font-family: 'Montserrat', sans-serif;">
+                          ${moment.desc}
+                        </p>
+                        <p class="text-xs italic opacity-60" style="color: ${config.secondary_action}; font-family: '${config.font_family}', serif;">
+                          "${moment.details}"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Center Dot -->
+                  <div class="absolute left-1/2 -translate-x-1/2 w-5 h-5 rounded-full z-10 hidden md:block" style="background: ${index === 3 ? config.secondary_action : config.primary_action}; box-shadow: 0 0 25px ${index === 3 ? config.secondary_action : config.primary_action}80;"></div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <!-- Footer Blessing -->
+          <div class="text-center mt-12 p-6 md:p-8 rounded-2xl" style="background: linear-gradient(135deg, ${config.primary_action}15, ${config.secondary_action}15); border: 2px solid ${config.primary_action}30;">
+            <p class="text-xl md:text-2xl font-bold mb-2" style="font-family: '${config.font_family}', serif; color: ${config.text_color};">
+              Con amor y bendiciones 💝
+            </p>
+            <p class="text-sm opacity-70" style="color: ${config.text_color}; font-family: 'Montserrat', sans-serif;">
+              Que Dios guíe cada paso de su camino
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    // SDK Initialization
+    const element = {
+      defaultConfig,
+      onConfigChange: async (config) => {
+        // Update background
+        const wrapper = document.getElementById('main-wrapper');
+        if (wrapper) {
+          wrapper.style.background = `linear-gradient(135deg, ${config.background_color}, #ffffff)`;
+        }
+        
+        // Re-render all sections with new config
+        renderAllSections();
+      },
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          {
+            get: () => config.background_color || defaultConfig.background_color,
+            set: (value) => { config.background_color = value; window.elementSdk.setConfig({ background_color: value }); }
+          },
+          {
+            get: () => config.surface_color || defaultConfig.surface_color,
+            set: (value) => { config.surface_color = value; window.elementSdk.setConfig({ surface_color: value }); }
+          },
+          {
+            get: () => config.text_color || defaultConfig.text_color,
+            set: (value) => { config.text_color = value; window.elementSdk.setConfig({ text_color: value }); }
+          },
+          {
+            get: () => config.primary_action || defaultConfig.primary_action,
+            set: (value) => { config.primary_action = value; window.elementSdk.setConfig({ primary_action: value }); }
+          },
+          {
+            get: () => config.secondary_action || defaultConfig.secondary_action,
+            set: (value) => { config.secondary_action = value; window.elementSdk.setConfig({ secondary_action: value }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (value) => { config.font_family = value; window.elementSdk.setConfig({ font_family: value }); }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (value) => { config.font_size = value; window.elementSdk.setConfig({ font_size: value }); }
+        }
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['baby_name', config.baby_name || defaultConfig.baby_name],
+        ['celebration_message', config.celebration_message || defaultConfig.celebration_message],
+        ['family_names', config.family_names || defaultConfig.family_names],
+        ['event_date', config.event_date || defaultConfig.event_date]
+      ])
+    };
+
+    if (window.elementSdk) {
+      window.elementSdk.init(element);
+    }
+
+    // Initialize app
+    createApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d1878d5f3234776',t:'MTc3MTcwMDI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
